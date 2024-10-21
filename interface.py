@@ -188,7 +188,3 @@ elif page == "Insurance Payment Averages":
 # Set the session state for navigation
 if 'page' not in st.session_state:
     st.session_state.page = "Home"
-
-if st.session_state.page != page:
-    st.session_state.page = page
-    st.experimental_rerun()
