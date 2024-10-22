@@ -8,7 +8,7 @@ import numpy as np
 def check_password():
     st.sidebar.title("Login")
     password = st.sidebar.text_input("Password", type="password")
-    if password == "your_password_here":
+    if password == "Upside":
         return True
     else:
         if password:
