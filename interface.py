@@ -11,7 +11,7 @@ st.set_page_config(page_title="Doctor Prioritization Interface", page_icon="🏥
 def check_password():
     st.sidebar.title("Login")
     password = st.sidebar.text_input("Password", type="password")
-    if password == "Upside":
+    if password == "your_password_here":
         return True
     else:
         if password:
@@ -176,7 +176,7 @@ if check_password():
         # Add a button to go back to the main page
         if st.button("Back to Home"):
             st.session_state.page = "Home"
-            st.experimental_rerun()
+            st.experimental_rerun() if 'page' in st.session_state else None
 
     elif page == "Insurance Payment Averages":
         st.title("Insurance Payment Averages per Procedure")
