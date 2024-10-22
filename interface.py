@@ -3,6 +3,7 @@ import pandas as pd
 import folium
 from streamlit_folium import folium_static
 import numpy as np
+import os
 
 # Set page configuration (must be the first Streamlit command)
 st.set_page_config(page_title="CMS Doctor Interface 🏥", page_icon="🏥")
@@ -28,9 +29,14 @@ if 'current_page' not in st.session_state:
 
 if check_password():
     # Load the data (use your own file path)
-    doctor_matching_df = pd.read_excel('/mnt/data/Doctor_Matching_With_Procedures_Separate_Sheets_V2.xlsx', sheet_name='Doctor_Matching')
-    procedure_prioritization_df = pd.read_excel('/mnt/data/Doctor_Matching_With_Procedures_Separate_Sheets_V2.xlsx', sheet_name='Procedure_Prioritization')
-    insurance_payments_df = pd.read_excel('/mnt/data/Doctor_Matching_With_Procedures_Separate_Sheets_V2.xlsx', sheet_name='Insurance Payment Avgs')
+    file_path = '/mnt/data/Doctor_Matching_With_Procedures_Separate_Sheets_V2.xlsx'
+    if os.path.exists(file_path):
+        doctor_matching_df = pd.read_excel(file_path, sheet_name='Doctor_Matching')
+        procedure_prioritization_df = pd.read_excel(file_path, sheet_name='Procedure_Prioritization')
+        insurance_payments_df = pd.read_excel(file_path, sheet_name='Insurance Payment Avgs')
+    else:
+        st.error("Data file not found. Please ensure the file is uploaded correctly.")
+        st.stop()
 
     # Clean the data by filling NaN values in relevant columns
     doctor_matching_df.fillna('', inplace=True)
