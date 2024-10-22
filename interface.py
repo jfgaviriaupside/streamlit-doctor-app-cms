@@ -144,6 +144,8 @@ if check_password():
                                 procedure_info.append(f"{procedure_name} (Rank: {procedure_rank}/{total_procedures})")
                     if procedure_info:
                         st.write(f"- **Procedures Done:** {', '.join(procedure_info)}")
+                    else:
+                        st.write("- **Procedures Done:** Not Available")
                     max_referrals = doctor_data['Referrals'].max()
                     st.write(f"- **Max Referrals in a Month:** {max_referrals}")
 
