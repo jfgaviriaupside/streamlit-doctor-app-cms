@@ -28,9 +28,9 @@ if 'current_page' not in st.session_state:
 
 if check_password():
     # Load the data (use your own file path)
-    doctor_matching_df = pd.read_excel('Doctor_Matching_With_Procedures_Separate_Sheets_V2.xlsx', sheet_name='Doctor_Matching')
-    procedure_prioritization_df = pd.read_excel('Doctor_Matching_With_Procedures_Separate_Sheets_V2.xlsx', sheet_name='Procedure_Prioritization')
-    insurance_payments_df = pd.read_excel('Insurace_Payments.xlsx', sheet_name='Insurance Payment Avgs')
+    doctor_matching_df = pd.read_excel('/mnt/data/Doctor_Matching_With_Procedures_Separate_Sheets_V2.xlsx', sheet_name='Doctor_Matching')
+    procedure_prioritization_df = pd.read_excel('/mnt/data/Doctor_Matching_With_Procedures_Separate_Sheets_V2.xlsx', sheet_name='Procedure_Prioritization')
+    insurance_payments_df = pd.read_excel('/mnt/data/Doctor_Matching_With_Procedures_Separate_Sheets_V2.xlsx', sheet_name='Insurance Payment Avgs')
 
     # Clean the data by filling NaN values in relevant columns
     doctor_matching_df.fillna('', inplace=True)
@@ -163,6 +163,13 @@ if check_password():
                                 popup=f"{row['Referring Physician']} - {row['Specialty']}",
                                 icon=folium.Icon(color='blue', icon='info-sign')
                             ).add_to(doctor_map)
+
+                    # Add a standard location marker for "CMS Diagnostic Services"
+                    folium.Marker(
+                        location=[25.701410, -80.342660],
+                        popup="CMS Diagnostic Services",
+                        icon=folium.Icon(color='red', icon='hospital')
+                    ).add_to(doctor_map)
 
                     folium_static(doctor_map)
             else:
