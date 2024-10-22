@@ -178,7 +178,7 @@ if check_password():
         if selected_procedure:
             filtered_payments = insurance_payments_df[insurance_payments_df['Procedure'] == selected_procedure]
             filtered_payments = filtered_payments[['Insurance', 'Avg Payment', 'Margin']]
-            filtered_payments = filtered_payments[filtered_payments['Insurance'] != '']
+            filtered_payments = filtered_payments[(filtered_payments['Insurance'] != '') & (filtered_payments['Avg Payment'] != 'N/A')]
             filtered_payments['Avg Payment'] = pd.to_numeric(filtered_payments['Avg Payment'], errors='coerce').apply(lambda x: f"${x:.2f}" if pd.notnull(x) else "N/A")
             filtered_payments['Margin'] = pd.to_numeric(filtered_payments['Margin'], errors='coerce').apply(lambda x: f"{int(x)}%" if pd.notnull(x) else "N/A")
             filtered_payments = filtered_payments.sort_values(by='Avg Payment', ascending=False).reset_index(drop=True)
