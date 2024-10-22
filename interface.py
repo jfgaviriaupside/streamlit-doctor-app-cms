@@ -8,7 +8,7 @@ import numpy as np
 def check_password():
     st.sidebar.title("Login")
     password = st.sidebar.text_input("Password", type="password")
-    if password == "Upside":
+    if password == "your_password_here":
         return True
     else:
         if password:
@@ -149,4 +149,58 @@ if check_password():
                     st.write("### Map of Locations:")
                     # Create a folium map centered at an average location
                     avg_lat = doctor_data['Latitude'].mean() if 'Latitude' in doctor_data.columns else 0
-                    avg_lon = doctor_data['Longitude'].mean() if 'Longitude
+                    avg_lon = doctor_data['Longitude'].mean() if 'Longitude' in doctor_data.columns else 0
+                    doctor_map = folium.Map(location=[avg_lat, avg_lon], zoom_start=12)
+                    
+                    # Add markers for each location
+                    for _, row in doctor_data.iterrows():
+                        if row['Latitude'] and row['Longitude']:
+                            folium.Marker(
+                                location=[row['Latitude'], row['Longitude']],
+                                popup=f"{row['Referring Physician']} - {row['Specialty']}",
+                                icon=folium.Icon(color='blue', icon='info-sign')
+                            ).add_to(doctor_map)
+                    
+                    # Add a standard location marker for "CMS Diagnostic Services"
+                    folium.Marker(
+                        location=[25.701410, -80.342660],
+                        popup="CMS Diagnostic Services",
+                        icon=folium.Icon(color='red', icon='hospital')
+                    ).add_to(doctor_map)
+                    
+                    # Display the map in Streamlit
+                    folium_static(doctor_map)
+            else:
+                st.write("No doctor found with that name.")
+
+        # Add a button to go back to the main page
+        if st.button("Back to Home"):
+            st.session_state.page = "Home"
+            st.experimental_rerun()
+
+    elif page == "Insurance Payment Averages":
+        st.title("Insurance Payment Averages per Procedure")
+
+        # Filter by procedure
+        available_procedures = insurance_payments_df['Procedure'].unique()
+        selected_procedure = st.selectbox("Select a procedure to view insurance payment averages:", available_procedures)
+
+        if selected_procedure:
+            filtered_payments = insurance_payments_df[insurance_payments_df['Procedure'] == selected_procedure]
+            filtered_payments = filtered_payments[['Insurance', 'Avg Payment', 'Margin']]
+            filtered_payments = filtered_payments[filtered_payments['Insurance'] != '']
+            filtered_payments['Avg Payment'] = pd.to_numeric(filtered_payments['Avg Payment'], errors='coerce').apply(lambda x: f"${x:.2f}" if pd.notnull(x) else "N/A")
+            filtered_payments['Margin'] = pd.to_numeric(filtered_payments['Margin'], errors='coerce').apply(lambda x: f"{int(x)}%" if pd.notnull(x) else "N/A")
+            filtered_payments['Avg Payment'] = pd.to_numeric(filtered_payments['Avg Payment'].str.replace('[\$,]', '', regex=True), errors='coerce')
+            filtered_payments = filtered_payments.sort_values(by='Avg Payment', ascending=False).reset_index(drop=True)
+            
+            # Display payment averages and margin without row numbers
+            st.write(filtered_payments)
+
+    # Set the session state for navigation
+    if 'page' not in st.session_state:
+        st.session_state.page = "Home"
+
+    if st.session_state.page != page:
+        st.session_state.page = page
+        st.experimental_rerun()
