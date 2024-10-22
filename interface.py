@@ -4,11 +4,14 @@ import folium
 from streamlit_folium import folium_static
 import numpy as np
 
+# Set page configuration (must be the first Streamlit command)
+st.set_page_config(page_title="Doctor Prioritization Interface", page_icon="🏥")
+
 # Simple password authentication
 def check_password():
     st.sidebar.title("Login")
     password = st.sidebar.text_input("Password", type="password")
-    if password == "Upside":
+    if password == "your_password_here":
         return True
     else:
         if password:
@@ -29,9 +32,6 @@ if check_password():
     # Convert 'Prioritization Index' to numeric to handle mixed types
     doctor_matching_df['Prioritization Index'] = pd.to_numeric(doctor_matching_df['Prioritization Index'], errors='coerce')
     procedure_prioritization_df['Prioritization Index Procedure'] = pd.to_numeric(procedure_prioritization_df['Prioritization Index Procedure'], errors='coerce')
-
-    # Streamlit App
-    st.set_page_config(page_title="Doctor Prioritization Interface", page_icon="🏥")
 
     # Main navigation options
     st.sidebar.title("Navigation")
@@ -131,76 +131,4 @@ if check_password():
                                 procedure_info.append(f"{procedure_name} (Rank: {procedure_rank}/{total_procedures})")
                     if procedure_info:
                         st.write(f"- **Procedures Done:** {', '.join(procedure_info)}")
-                    max_referrals = doctor_data['Referrals'].max()
-                    st.write(f"- **Max Referrals in a Month:** {max_referrals}")
-                    cagr_last_3_months = doctor_data['CAGR'].iloc[0] * 100 if 'CAGR' in doctor_data.columns and not doctor_data['CAGR'].isna().iloc[0] else None
-                    st.write(f"- **3 Last Month CAGR:** {cagr_last_3_months:.2f}%" if cagr_last_3_months is not None else "- **3 Last Month CAGR:** Not Available")
-                
-                with tab2:
-                    st.write("### Addresses and Contact Information:")
-                    addresses = doctor_data[['Insurance', 'Address', 'Phone Number', 'Latitude', 'Longitude']].drop_duplicates()
-                    for _, row in addresses.iterrows():
-                        st.write(f"  - **Address:** {row['Address']}")
-                        st.write(f"  - **Phone Number:** {row['Phone Number']}")
-                        st.write(f"  - **Gotten from:** {row['Insurance']}")
-                        st.write("---")
-
-                with tab3:
-                    st.write("### Map of Locations:")
-                    # Create a folium map centered at an average location
-                    avg_lat = doctor_data['Latitude'].mean() if 'Latitude' in doctor_data.columns else 0
-                    avg_lon = doctor_data['Longitude'].mean() if 'Longitude' in doctor_data.columns else 0
-                    doctor_map = folium.Map(location=[avg_lat, avg_lon], zoom_start=12)
-                    
-                    # Add markers for each location
-                    for _, row in doctor_data.iterrows():
-                        if row['Latitude'] and row['Longitude']:
-                            folium.Marker(
-                                location=[row['Latitude'], row['Longitude']],
-                                popup=f"{row['Referring Physician']} - {row['Specialty']}",
-                                icon=folium.Icon(color='blue', icon='info-sign')
-                            ).add_to(doctor_map)
-                    
-                    # Add a standard location marker for "CMS Diagnostic Services"
-                    folium.Marker(
-                        location=[25.701410, -80.342660],
-                        popup="CMS Diagnostic Services",
-                        icon=folium.Icon(color='red', icon='hospital')
-                    ).add_to(doctor_map)
-                    
-                    # Display the map in Streamlit
-                    folium_static(doctor_map)
-            else:
-                st.write("No doctor found with that name.")
-
-        # Add a button to go back to the main page
-        if st.button("Back to Home"):
-            st.session_state.page = "Home"
-            st.experimental_rerun()
-
-    elif page == "Insurance Payment Averages":
-        st.title("Insurance Payment Averages per Procedure")
-
-        # Filter by procedure
-        available_procedures = insurance_payments_df['Procedure'].unique()
-        selected_procedure = st.selectbox("Select a procedure to view insurance payment averages:", available_procedures)
-
-        if selected_procedure:
-            filtered_payments = insurance_payments_df[insurance_payments_df['Procedure'] == selected_procedure]
-            filtered_payments = filtered_payments[['Insurance', 'Avg Payment', 'Margin']]
-            filtered_payments = filtered_payments[filtered_payments['Insurance'] != '']
-            filtered_payments['Avg Payment'] = pd.to_numeric(filtered_payments['Avg Payment'], errors='coerce').apply(lambda x: f"${x:.2f}" if pd.notnull(x) else "N/A")
-            filtered_payments['Margin'] = pd.to_numeric(filtered_payments['Margin'], errors='coerce').apply(lambda x: f"{int(x)}%" if pd.notnull(x) else "N/A")
-            filtered_payments['Avg Payment'] = pd.to_numeric(filtered_payments['Avg Payment'].str.replace('[\$,]', '', regex=True), errors='coerce')
-            filtered_payments = filtered_payments.sort_values(by='Avg Payment', ascending=False).reset_index(drop=True)
-            
-            # Display payment averages and margin without row numbers
-            st.write(filtered_payments)
-
-    # Set the session state for navigation
-    if 'page' not in st.session_state:
-        st.session_state.page = "Home"
-
-    if st.session_state.page != page:
-        st.session_state.page = page
-        st.experimental_rerun()
+                    max_referrals
