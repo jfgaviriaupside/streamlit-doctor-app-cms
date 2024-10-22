@@ -196,6 +196,6 @@ if check_password():
             filtered_payments = filtered_payments[(filtered_payments['Insurance'] != '') & (filtered_payments['Avg Payment'] != '')]
             filtered_payments['Avg Payment'] = pd.to_numeric(filtered_payments['Avg Payment'], errors='coerce').dropna().apply(lambda x: f"${x:.2f}")
             filtered_payments['Margin'] = pd.to_numeric(filtered_payments['Margin'], errors='coerce').dropna().apply(lambda x: f"{int(x)}%")
-            filtered_payments = filtered_payments.sort_values(by='Avg Payment', ascending=False).reset_index(drop=True)
+            filtered_payments = filtered_payments.sort_values(by='Margin', ascending=False).reset_index(drop=True)
 
             st.write(filtered_payments)
