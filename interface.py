@@ -84,7 +84,10 @@ if check_password():
             # Ensure the CAGR column exists before attempting to add it
             if 'CAGR' in doctor_matching_df.columns:
                 filtered_procedures = filtered_procedures.merge(doctor_matching_df[['Referring Physician', 'Luis, Gerardo o Alex', 'CAGR']].drop_duplicates(subset='Referring Physician'), on='Referring Physician', how='left')
-                filtered_procedures['CAGR'] = filtered_procedures['CAGR'].replace('', 'Not Available').fillna('Not Available')
+                if 'CAGR' in filtered_procedures.columns:
+                    filtered_procedures['CAGR'] = filtered_procedures['CAGR'].replace('', 'Not Available').fillna('Not Available')
+                else:
+                    filtered_procedures['CAGR'] = 'Not Available'
             else:
                 filtered_procedures['CAGR'] = 'Not Available'
 
