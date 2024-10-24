@@ -47,6 +47,10 @@ if check_password():
     doctor_matching_df['Prioritization Index'] = pd.to_numeric(doctor_matching_df['Prioritization Index'], errors='coerce')
     procedure_prioritization_df['Prioritization Index Procedure'] = pd.to_numeric(procedure_prioritization_df['Prioritization Index Procedure'], errors='coerce')
 
+    # Ensure CAGR column exists in doctor_matching_df
+    if 'CAGR' not in doctor_matching_df.columns:
+        doctor_matching_df['CAGR'] = np.nan
+
     # Main navigation options
     st.sidebar.title("Navigation")
     page = st.sidebar.radio("Go to", ["Home", "Doctor Profile Lookup", "Insurance Payment Averages"],
