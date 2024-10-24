@@ -47,10 +47,6 @@ if check_password():
     doctor_matching_df['Prioritization Index'] = pd.to_numeric(doctor_matching_df['Prioritization Index'], errors='coerce')
     procedure_prioritization_df['Prioritization Index Procedure'] = pd.to_numeric(procedure_prioritization_df['Prioritization Index Procedure'], errors='coerce')
 
-    # Ensure CAGR column exists in doctor_matching_df
-    if 'CAGR' not in doctor_matching_df.columns:
-        doctor_matching_df['CAGR'] = np.nan
-
     # Main navigation options
     st.sidebar.title("Navigation")
     page = st.sidebar.radio("Go to", ["Home", "Doctor Profile Lookup", "Insurance Payment Averages"],
@@ -84,7 +80,6 @@ if check_password():
                 (procedure_prioritization_df['Prioritization Index Procedure'].notna())
             ].sort_values(by='Prioritization Index Procedure', ascending=False).drop_duplicates(subset='Referring Physician').reset_index(drop=True)
             filtered_procedures['Rank'] = filtered_procedures.index + 1
-            filtered_procedures = filtered_procedures.merge(doctor_matching_df[['Referring Physician', 'Luis, Gerardo o Alex', 'CAGR']], on='Referring Physician', how='left')
             filtered_procedures['Luis, Gerardo o Alex'] = filtered_procedures['Luis, Gerardo o Alex'].apply(lambda x: f"YES, {x}" if x else "NO")
             filtered_procedures = filtered_procedures[['Rank', 'Referring Physician', 'Procedure', 'Referrals', 'CAGR', 'Luis, Gerardo o Alex']]
 
