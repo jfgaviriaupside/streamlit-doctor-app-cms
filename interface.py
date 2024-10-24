@@ -81,15 +81,9 @@ if check_password():
             ].sort_values(by='Prioritization Index Procedure', ascending=False).drop_duplicates(subset='Referring Physician').reset_index(drop=True)
             filtered_procedures['Rank'] = filtered_procedures.index + 1
 
-            # Ensure the CAGR column exists before attempting to add it
-            if 'CAGR' in doctor_matching_df.columns:
-                filtered_procedures = filtered_procedures.merge(doctor_matching_df[['Referring Physician', 'Luis, Gerardo o Alex', 'CAGR']].drop_duplicates(subset='Referring Physician'), on='Referring Physician', how='left')
-                if 'CAGR' in filtered_procedures.columns:
-                    filtered_procedures['CAGR'] = filtered_procedures['CAGR'].replace('', 'Not Available').fillna('Not Available')
-                else:
-                    filtered_procedures['CAGR'] = 'Not Available'
-            else:
-                filtered_procedures['CAGR'] = 'Not Available'
+            # Merge CAGR from doctor_matching_df
+            filtered_procedures = filtered_procedures.merge(doctor_matching_df[['Referring Physician', 'Luis, Gerardo o Alex', 'CAGR']].drop_duplicates(subset='Referring Physician'), on='Referring Physician', how='left')
+            filtered_procedures['CAGR'] = filtered_procedures['CAGR'].replace('', 'Not Available').fillna('Not Available')
 
             filtered_procedures['Luis, Gerardo o Alex'] = filtered_procedures['Luis, Gerardo o Alex'].apply(lambda x: f"YES, {x}" if x else "NO")
             filtered_procedures = filtered_procedures[['Rank', 'Referring Physician', 'Procedure', 'Referrals', 'CAGR', 'Luis, Gerardo o Alex']]
