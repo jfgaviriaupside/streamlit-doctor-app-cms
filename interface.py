@@ -81,10 +81,10 @@ if check_password():
             ].sort_values(by='Prioritization Index Procedure', ascending=False).drop_duplicates(subset='Referring Physician').reset_index(drop=True)
             filtered_procedures['Rank'] = filtered_procedures.index + 1
 
-            # Add CAGR column if it exists in doctor_matching_df
+            # Ensure the CAGR column exists before attempting to add it
             if 'CAGR' in doctor_matching_df.columns:
                 filtered_procedures = filtered_procedures.merge(doctor_matching_df[['Referring Physician', 'Luis, Gerardo o Alex', 'CAGR']].drop_duplicates(subset='Referring Physician'), on='Referring Physician', how='left')
-                filtered_procedures['CAGR'] = filtered_procedures['CAGR'].replace('', 'Not Available')
+                filtered_procedures['CAGR'] = filtered_procedures['CAGR'].replace('', 'Not Available').fillna('Not Available')
             else:
                 filtered_procedures['CAGR'] = 'Not Available'
 
@@ -194,4 +194,15 @@ if check_password():
     elif st.session_state.current_page == "Insurance Payment Averages":
         st.title("Insurance Payment Averages per Procedure")
 
-        available_procedures = insurance
+        available_procedures = insurance_payments_df['Procedure'].unique()
+        selected_procedure = st.selectbox("Select a procedure to view insurance payment averages:", available_procedures)
+
+        if selected_procedure:
+            filtered_payments = insurance_payments_df[insurance_payments_df['Procedure'] == selected_procedure]
+            filtered_payments = filtered_payments[['Insurance', 'Avg Payment', 'Margin']]
+            filtered_payments = filtered_payments[(filtered_payments['Insurance'] != '') & (filtered_payments['Avg Payment'] != '')]
+            filtered_payments['Avg Payment'] = pd.to_numeric(filtered_payments['Avg Payment'], errors='coerce').dropna().apply(lambda x: f"${x:.2f}")
+            filtered_payments['Margin'] = pd.to_numeric(filtered_payments['Margin'], errors='coerce').dropna().apply(lambda x: f"{int(x)}%")
+            filtered_payments = filtered_payments.sort_values(by='Margin', ascending=False).reset_index(drop=True)
+
+            st.write(filtered_payments)
