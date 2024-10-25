@@ -9,12 +9,13 @@ from io import BytesIO
 # Set page configuration (must be the first Streamlit command)
 st.set_page_config(page_title="CMS Doctor Interface 🏥", page_icon="🏥", layout="wide", initial_sidebar_state="expanded")
 
-# Define a consistent color palette
+# Define a consistent dark color palette
 theme_colors = {
     "primary": "#1E3F6A",
     "secondary": "#EA622E",
     "accent": "#49A281",
-    "text": "#475368"
+    "background": "#1E1E1E",
+    "text": "#F5F5F5"
 }
 
 # Set custom CSS for consistent styling
@@ -34,10 +35,14 @@ def set_custom_css():
             color: {theme_colors['text']};
         }}
         .css-10trblm a {{
-            color: {theme_colors['primary']};
+            color: {theme_colors['accent']};
         }}
         .css-1aumxhk .st-bm {{
             background-color: {theme_colors['primary']};
+            color: white;
+        }}
+        .css-1aumxhk .st-bm:hover {{
+            background-color: {theme_colors['secondary']};
             color: white;
         }}
         </style>
