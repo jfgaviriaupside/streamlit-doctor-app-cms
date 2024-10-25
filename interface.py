@@ -63,7 +63,7 @@ if check_password():
 
     # Home Page
     if st.session_state.current_page == "Home":
-        st.title("Doctor Prioritization Interface")
+        st.title("CMS Doctor Prioritization Interface 🏥")
 
         # Display a list of top-priority doctors sorted by general prioritization index
         st.write("## Top Priority Doctors")
@@ -83,7 +83,7 @@ if check_password():
         st.download_button("Download Top Doctors Data", data=towrite, file_name="top_doctors.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
         # Procedure Prioritization Ranking for All Doctors
-        st.write("## Procedure Prioritization Ranking")
+        st.write("## Doctor Priorization per Procedure")
         available_procedures = procedure_prioritization_df['Procedure'].unique()
         selected_procedure = st.selectbox("Select a procedure to view the ranking of doctors:", available_procedures)
 
@@ -105,7 +105,7 @@ if check_password():
             st.download_button("Download Procedure Ranking Data", data=towrite, file_name="procedure_ranking.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
         # Specialty-wise ranking table
-        st.write("## Doctors Ranked by Specialty")
+        st.write("## Doctors Priorization per Specialty")
         available_specialties = doctor_matching_df['Specialty'].unique()
         selected_specialty = st.selectbox("Select a specialty to view the ranking of doctors:", available_specialties)
 
