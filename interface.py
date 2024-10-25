@@ -81,7 +81,6 @@ if check_password():
             ].sort_values(by='Prioritization Index Procedure', ascending=False).drop_duplicates(subset='Referring Physician').reset_index(drop=True)
             filtered_procedures['Rank'] = filtered_procedures.index + 1
             filtered_procedures = filtered_procedures.merge(doctor_matching_df[['Referring Physician', 'Luis, Gerardo o Alex']].drop_duplicates(subset='Referring Physician'), on='Referring Physician', how='left')
-            filtered_specialty['CAGR'] = filtered_specialty.groupby('Referring Physician')['Insurance'].transform(lambda x: ', '.join(x.unique()))
             filtered_procedures['Luis, Gerardo o Alex'] = filtered_procedures['Luis, Gerardo o Alex'].apply(lambda x: f"YES, {x}" if x else "NO")
             filtered_procedures = filtered_procedures[['Rank', 'Referring Physician', 'Procedure', 'Referrals', 'Luis, Gerardo o Alex']]
 
