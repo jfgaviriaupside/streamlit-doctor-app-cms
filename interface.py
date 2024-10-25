@@ -200,18 +200,29 @@ if check_password():
                 st.write("No doctor found with that name.")
 
     # Insurance Payment Averages Page
+    # Insurance Payment Averages Page
     elif st.session_state.current_page == "Insurance Payment Averages":
         st.title("Insurance Payment Averages per Procedure")
-
+    
         available_procedures = insurance_payments_df['Procedure'].unique()
         selected_procedure = st.selectbox("Select a procedure to view insurance payment averages:", available_procedures)
-
+    
         if selected_procedure:
             filtered_payments = insurance_payments_df[insurance_payments_df['Procedure'] == selected_procedure]
+    
+            # Allow the user to select insurances of interest
+            available_insurances = filtered_payments['Insurance'].unique()
+            selected_insurances = st.multiselect("Select insurances to filter:", options=available_insurances, default=available_insurances)
+    
+            # Filter by the selected insurances
+            filtered_payments = filtered_payments[filtered_payments['Insurance'].isin(selected_insurances)]
+    
+            # Further filtering and formatting
             filtered_payments = filtered_payments[['Insurance', 'Avg Payment', 'Margin']]
             filtered_payments = filtered_payments[(filtered_payments['Insurance'] != '') & (filtered_payments['Avg Payment'] != '')]
-            filtered_payments['Avg Payment'] = pd.to_numeric(filtered_payments['Avg Payment'], errors='coerce').dropna().apply(lambda x: f"${x:.2f}")
-            filtered_payments['Margin'] = pd.to_numeric(filtered_payments['Margin'], errors='coerce').dropna().apply(lambda x: f"{int(x)}%")
+            filtered_payments['Avg Payment'] = pd.to_numeric(filtered_payments['Avg Payment'], errors='coerce').apply(lambda x: f"${x:.2f}" if pd.notna(x) else "N/A")
+            filtered_payments['Margin'] = pd.to_numeric(filtered_payments['Margin'], errors='coerce').apply(lambda x: f"{int(x)}%" if pd.notna(x) else "N/A")
             filtered_payments = filtered_payments.sort_values(by='Margin', ascending=False).reset_index(drop=True)
-
+    
             st.write(filtered_payments)
+
