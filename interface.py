@@ -63,7 +63,7 @@ if check_password():
 
     # Home Page
     if st.session_state.current_page == "Home":
-        st.title("CMS Doctor Prioritization Interface 🏥")
+        st.title("CMS Doctor Prioritization Interface")
 
         # Display a list of top-priority doctors sorted by general prioritization index
         st.write("## Top Priority Doctors")
