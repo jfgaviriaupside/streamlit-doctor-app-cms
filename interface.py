@@ -107,50 +107,63 @@ if check_password():
 
     # Doctor Profile Lookup Page
     elif st.session_state.current_page == "Doctor Profile Lookup":
-        st.title("Doctor Profile Lookup")
+    st.title("Doctor Profile Lookup")
 
-        doctor_name = st.selectbox("Search for a doctor by name:", options=doctor_matching_df['Referring Physician'].unique(), index=0)
+    doctor_name = st.selectbox("Search for a doctor by name:", options=doctor_matching_df['Referring Physician'].unique(), index=0)
 
-        if doctor_name:
-            doctor_data = doctor_matching_df[doctor_matching_df['Referring Physician'] == doctor_name]
+    if doctor_name:
+        doctor_data = doctor_matching_df[doctor_matching_df['Referring Physician'] == doctor_name]
 
-            if not doctor_data.empty:
-                first_entry = doctor_data.iloc[0]
-                st.write(f"## Doctor Profile: {first_entry['Referring Physician']}")
-                rank_data = doctor_matching_df[['Referring Physician', 'Prioritization Index']].sort_values(by='Prioritization Index', ascending=False).reset_index(drop=True)
-                rank = rank_data[rank_data['Referring Physician'] == first_entry['Referring Physician']].index
-                if len(rank) > 0:
-                    rank = rank[0] + 1
-                    total_doctors = len(rank_data)
-                    st.write(f"- **Rank:** {rank}/{total_doctors}")
+        if not doctor_data.empty:
+            first_entry = doctor_data.iloc[0]
+            st.write(f"## Doctor Profile: {first_entry['Referring Physician']}")
+            rank_data = doctor_matching_df[['Referring Physician', 'Prioritization Index']].sort_values(by='Prioritization Index', ascending=False).reset_index(drop=True)
+            rank = rank_data[rank_data['Referring Physician'] == first_entry['Referring Physician']].index
+            if len(rank) > 0:
+                rank = rank[0] + 1
+                total_doctors = len(rank_data)
+                st.write(f"- **Rank:** {rank}/{total_doctors}")
+            else:
+                st.write("- **Rank:** Not Available")
+
+            tab1, tab2, tab3 = st.tabs(["General Info", "Addresses and Contact Information", "Map of Locations"])
+
+            with tab1:
+                st.write(f"- **Specialty:** {first_entry['Specialty']}")
+                insurances = ', '.join(doctor_data['Insurance'].unique())
+                st.write(f"- **Insurances:** {insurances}")
+                luis_gerardo_alex = first_entry['Luis, Gerardo o Alex']
+                st.write(f"- **Luis, Gerardo o Alex:** {'YES, ' + luis_gerardo_alex if luis_gerardo_alex else 'NO'}")
+                
+                # Fix for including all relevant procedures
+                procedures = procedure_prioritization_df[
+                    (procedure_prioritization_df['Referring Physician'] == doctor_name) &
+                    (procedure_prioritization_df['Prioritization Index Procedure'].notna())
+                ].reset_index(drop=True)
+                
+                procedure_info = []
+                for _, row in procedures.iterrows():
+                    procedure_name = row['Procedure']
+                    procedure_rank_data = procedure_prioritization_df[
+                        (procedure_prioritization_df['Procedure'] == procedure_name) &
+                        (procedure_prioritization_df['Prioritization Index Procedure'].notna())
+                    ].sort_values(by='Prioritization Index Procedure', ascending=False).reset_index(drop=True)
+                    procedure_rank = procedure_rank_data[procedure_rank_data['Referring Physician'] == doctor_name].index
+                    
+                    if len(procedure_rank) > 0:
+                        procedure_rank = procedure_rank[0] + 1
+                        total_procedures = len(procedure_rank_data)
+                        if procedure_rank <= total_procedures:
+                            procedure_info.append(f"{procedure_name} (Rank: {procedure_rank}/{total_procedures})")
+                
+                if procedure_info:
+                    st.write(f"- **Procedures Done:** {', '.join(procedure_info)}")
                 else:
-                    st.write("- **Rank:** Not Available")
+                    st.write("- **Procedures Done:** Not Available")
+                
+                max_referrals = doctor_data['Referrals'].max()
+                st.write(f"- **Max Referrals in a Month:** {max_referrals}")
 
-                tab1, tab2, tab3 = st.tabs(["General Info", "Addresses and Contact Information", "Map of Locations"])
-
-                with tab1:
-                    st.write(f"- **Specialty:** {first_entry['Specialty']}")
-                    insurances = ', '.join(doctor_data['Insurance'].unique())
-                    st.write(f"- **Insurances:** {insurances}")
-                    luis_gerardo_alex = first_entry['Luis, Gerardo o Alex']
-                    st.write(f"- **Luis, Gerardo o Alex:** {'YES, ' + luis_gerardo_alex if luis_gerardo_alex else 'NO'}")
-                    procedures = procedure_prioritization_df[(procedure_prioritization_df['Referring Physician'] == doctor_name) & (procedure_prioritization_df['Prioritization Index Procedure'].notna())]
-                    procedure_info = []
-                    for _, row in procedures.iterrows():
-                        procedure_name = row['Procedure']
-                        procedure_rank_data = procedure_prioritization_df[(procedure_prioritization_df['Procedure'] == procedure_name) & (procedure_prioritization_df['Prioritization Index Procedure'].notna())]
-                        procedure_rank = procedure_rank_data[procedure_rank_data['Referring Physician'] == doctor_name].index
-                        if len(procedure_rank) > 0:
-                            procedure_rank = procedure_rank[0] + 1
-                            total_procedures = len(procedure_rank_data)
-                            if procedure_rank <= total_procedures:
-                                procedure_info.append(f"{procedure_name} (Rank: {procedure_rank}/{total_procedures})")
-                    if procedure_info:
-                        st.write(f"- **Procedures Done:** {', '.join(procedure_info)}")
-                    else:
-                        st.write("- **Procedures Done:** Not Available")
-                    max_referrals = doctor_data['Referrals'].max()
-                    st.write(f"- **Max Referrals in a Month:** {max_referrals}")
 
                 with tab2:
                     st.write("### Addresses and Contact Information:")
