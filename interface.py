@@ -4,6 +4,7 @@ import folium
 from streamlit_folium import folium_static
 import numpy as np
 import os
+from io import BytesIO
 
 # Set page configuration (must be the first Streamlit command)
 st.set_page_config(page_title="CMS Doctor Interface 🏥", page_icon="🏥")
@@ -76,7 +77,10 @@ if check_password():
         top_doctors = top_doctors[['Rank', 'Referring Physician', 'Specialty', 'Insurance', 'CAGR', 'Referrals', 'Luis, Gerardo o Alex']]
 
         st.write(top_doctors)
-        st.download_button("Download Top Doctors Data", data=top_doctors.to_csv(index=False), file_name="top_doctors.csv", mime="text/csv")
+        towrite = BytesIO()
+        top_doctors.to_excel(towrite, index=False, sheet_name='Top Doctors')
+        towrite.seek(0)
+        st.download_button("Download Top Doctors Data", data=towrite, file_name="top_doctors.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
         # Procedure Prioritization Ranking for All Doctors
         st.write("## Procedure Prioritization Ranking")
@@ -95,7 +99,10 @@ if check_password():
             filtered_procedures = filtered_procedures[['Rank', 'Referring Physician', 'Procedure', 'CAGR', 'Referrals', 'Luis, Gerardo o Alex']]
 
             st.write(filtered_procedures)
-            st.download_button("Download Procedure Ranking Data", data=filtered_procedures.to_csv(index=False), file_name="procedure_ranking.csv", mime="text/csv")
+            towrite = BytesIO()
+            filtered_procedures.to_excel(towrite, index=False, sheet_name='Procedure Ranking')
+            towrite.seek(0)
+            st.download_button("Download Procedure Ranking Data", data=towrite, file_name="procedure_ranking.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
         # Specialty-wise ranking table
         st.write("## Doctors Ranked by Specialty")
@@ -112,7 +119,10 @@ if check_password():
             filtered_specialty = filtered_specialty[['Rank', 'Referring Physician', 'Specialty', 'Insurance', 'Referrals', 'Luis, Gerardo o Alex']]
 
             st.write(filtered_specialty)
-            st.download_button("Download Specialty Ranking Data", data=filtered_specialty.to_csv(index=False), file_name="specialty_ranking.csv", mime="text/csv")
+            towrite = BytesIO()
+            filtered_specialty.to_excel(towrite, index=False, sheet_name='Specialty Ranking')
+            towrite.seek(0)
+            st.download_button("Download Specialty Ranking Data", data=towrite, file_name="specialty_ranking.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
     # Doctor Profile Lookup Page
     elif st.session_state.current_page == "Doctor Profile Lookup":
