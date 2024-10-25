@@ -7,7 +7,45 @@ import os
 from io import BytesIO
 
 # Set page configuration (must be the first Streamlit command)
-st.set_page_config(page_title="CMS Doctor Interface 🏥", page_icon="🏥")
+st.set_page_config(page_title="CMS Doctor Interface 🏥", page_icon="🏥", layout="wide", initial_sidebar_state="expanded")
+
+# Define a consistent color palette
+theme_colors = {
+    "primary": "#1E3F6A",
+    "secondary": "#EA622E",
+    "accent": "#49A281",
+    "background": "#F5F5F5",
+    "text": "#475368"
+}
+
+# Set custom CSS for consistent styling
+def set_custom_css():
+    st.markdown(f"""
+        <style>
+        .stApp {{
+            background-color: {theme_colors['background']};
+        }}
+        .css-18e3th9 {{
+            color: {theme_colors['text']};
+        }}
+        .css-1d391kg p {{
+            color: {theme_colors['text']};
+        }}
+        .css-1v0mbdj {{
+            color: {theme_colors['text']};
+        }}
+        .css-10trblm a {{
+            color: {theme_colors['primary']};
+        }}
+        .css-1aumxhk .st-bm {{
+            background-color: {theme_colors['primary']};
+            color: white;
+        }}
+        </style>
+    """, unsafe_allow_html=True)
+
+set_custom_css()
+
 
 # Simple password authentication
 def check_password():
