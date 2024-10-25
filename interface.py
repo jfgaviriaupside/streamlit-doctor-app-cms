@@ -131,6 +131,9 @@ if check_password():
             towrite.seek(0)
             st.download_button("Download Specialty Ranking Data", data=towrite, file_name="specialty_ranking.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
+                # Add a button to download the ranking explanation
+        with open('Explicacion_Indice_Priorizacion_Doctor_Procedimientos.docx', 'rb') as file:
+            st.download_button("Download Ranking Explanation", data=file, file_name="Explicacion_Indice_Priorizacion_Doctor_Procedimientos.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
     # Doctor Profile Lookup Page
     elif st.session_state.current_page == "Doctor Profile Lookup":
         st.title("Doctor Profile Lookup")
