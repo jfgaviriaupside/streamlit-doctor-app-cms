@@ -65,6 +65,13 @@ if check_password():
     if st.session_state.current_page == "Home":
         st.title("CMS Doctor Prioritization Interface")
 
+        # Glossary Section
+        with st.expander("Glossary"):
+            st.write("**Insurance**: Insurance databases where we found this doctor listed.")
+            st.write("**CAGR**: The compound growth (or decline) rate for referrals by this doctor to CMS in the last three months when this database was collected (June-August, 2024).")
+            st.write("**Referrals**: The maximum number of referrals given by a doctor in a single month in the last two years.")
+            st.write("**Luis, Gerardo or Alex**: If this doctor was found in a database owned by Luis, Gerardo or Alex, and, if so, to which one.")
+        
         # Display a list of top-priority doctors sorted by general prioritization index
         st.write("## Top Priority Doctors")
         top_doctors = doctor_matching_df[['Referring Physician', 'Prioritization Index', 'Specialty', 'Insurance', 'Referrals', 'Luis, Gerardo o Alex', 'CAGR']]
