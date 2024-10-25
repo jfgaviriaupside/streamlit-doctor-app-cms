@@ -70,7 +70,7 @@ if check_password():
             st.write("**Insurance**: Insurance databases where we found this doctor listed.")
             st.write("**CAGR**: The compound growth (or decline) rate for referrals by this doctor to CMS in the last three months when this database was collected (June-August, 2024).")
             st.write("**Referrals**: The maximum number of referrals given by a doctor in a single month in the last two years.")
-            st.write("**Luis, Gerardo or Alex**: If this doctor was found in a database owned by Luis, Gerardo or Alex, and, if so, to which one.")
+            st.write("**Luis, Gerardo or Alex**: If this doctor was found in a database owned by Luis, Gerardo or Alex, and, if so, in which one.")
         
         # Display a list of top-priority doctors sorted by general prioritization index
         st.write("## Top Priority Doctors")
