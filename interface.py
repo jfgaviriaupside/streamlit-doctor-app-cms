@@ -209,7 +209,7 @@ if check_password():
                 folium.Marker(
                     location=[25.701410, -80.342660],
                     popup="CMS Diagnostic Services",
-                    icon=folium.Icon(color='blue', icon='hospital')
+                    icon=folium.Icon(color='red', icon='home')
                 ).add_to(doctor_map)
 
                 folium_static(doctor_map)
