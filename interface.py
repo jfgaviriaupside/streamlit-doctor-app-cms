@@ -60,14 +60,15 @@ if check_password():
 
         # Display a list of top-priority doctors sorted by general prioritization index
         st.write("## Top Priority Doctors")
-        top_doctors = doctor_matching_df[['Referring Physician', 'Prioritization Index', 'Specialty', 'Insurance', 'Referrals', 'Luis, Gerardo o Alex']]
+        top_doctors = doctor_matching_df[['Referring Physician', 'Prioritization Index', 'Specialty', 'Insurance', 'Referrals', 'Luis, Gerardo o Alex', 'CAGR']]
         top_doctors = top_doctors.sort_values(by='Prioritization Index', ascending=False).drop_duplicates(subset='Referring Physician').head(50).reset_index(drop=True)
         top_doctors['Rank'] = top_doctors.index + 1
         top_doctors['Insurance'] = top_doctors.groupby('Referring Physician')['Insurance'].transform(lambda x: ', '.join(x.unique()))
         top_doctors['Luis, Gerardo o Alex'] = top_doctors['Luis, Gerardo o Alex'].apply(lambda x: f"YES, {x}" if x else "NO")
-        top_doctors['CAGR'] = pd.to_numeric(top_doctors['CAGR'], errors='coerce').apply(lambda x: f"{x*100:.1f}%" if pd.notna(x) else "N/A")
-        top_doctors = top_doctors[['Rank', 'Referring Physician', 'Specialty', 'Insurance', 'CAGR', 'Referrals', 'Luis, Gerardo o Alex']]
 
+        top_doctors['CAGR'] = pd.to_numeric(top_doctors['CAGR'], errors='coerce').apply(lambda x: f"{x * 100:.1f}%" if pd.notna(x) else "N/A")
+        top_doctors = top_doctors[['Rank', 'Referring Physician', 'Specialty', 'Insurance', 'CAGR', 'Referrals', 'Luis, Gerardo o Alex']]
+        
         st.write(top_doctors)
 
         # Procedure Prioritization Ranking for All Doctors
