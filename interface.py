@@ -7,48 +7,7 @@ import os
 from io import BytesIO
 
 # Set page configuration (must be the first Streamlit command)
-st.set_page_config(page_title="CMS Doctor Interface 🏥", page_icon="🏥", layout="wide", initial_sidebar_state="expanded")
-
-# Define a consistent dark color palette
-theme_colors = {
-    "primary": "#1E3F6A",
-    "secondary": "#EA622E",
-    "accent": "#49A281",
-    "background": "#1E1E1E",
-    "text": "#F5F5F5"
-}
-
-# Set custom CSS for consistent styling
-def set_custom_css():
-    st.markdown(f"""
-        <style>
-        .stApp {{
-            background-color: {theme_colors['background']};
-        }}
-        .css-18e3th9 {{
-            color: {theme_colors['text']};
-        }}
-        .css-1d391kg p {{
-            color: {theme_colors['text']};
-        }}
-        .css-1v0mbdj {{
-            color: {theme_colors['text']};
-        }}
-        .css-10trblm a {{
-            color: {theme_colors['accent']};
-        }}
-        .css-1aumxhk .st-bm {{
-            background-color: {theme_colors['primary']};
-            color: white;
-        }}
-        .css-1aumxhk .st-bm:hover {{
-            background-color: {theme_colors['secondary']};
-            color: white;
-        }}
-        </style>
-    """, unsafe_allow_html=True)
-
-set_custom_css()
+st.set_page_config(page_title="CMS Doctor Interface 🏥", page_icon="🏥")
 
 # Simple password authentication
 def check_password():
@@ -186,4 +145,97 @@ if check_password():
                 else:
                     st.write("- **Rank:** Not Available")
     
-               
+                col1, col2 = st.columns(2)
+    
+                with col1:
+                    st.write(f"- **Specialty:** {first_entry['Specialty']}")
+                    insurances = ', '.join(doctor_data['Insurance'].unique())
+                    st.write(f"- **Insurances:** {insurances}")
+                    luis_gerardo_alex = first_entry['Luis, Gerardo o Alex']
+                    st.write(f"- **Luis, Gerardo o Alex:** {'YES, ' + luis_gerardo_alex if luis_gerardo_alex else 'NO'}")
+                
+                with col2:
+                    # Fix for including all relevant procedures
+                    procedures = procedure_prioritization_df[
+                        (procedure_prioritization_df['Referring Physician'] == doctor_name) &
+                        (procedure_prioritization_df['Prioritization Index Procedure'].notna())
+                    ].reset_index(drop=True)
+                    
+                    procedure_info = []
+                    for _, row in procedures.iterrows():
+                        procedure_name = row['Procedure']
+                        procedure_rank_data = procedure_prioritization_df[
+                            (procedure_prioritization_df['Procedure'] == procedure_name) &
+                            (procedure_prioritization_df['Prioritization Index Procedure'].notna())
+                        ].sort_values(by='Prioritization Index Procedure', ascending=False).reset_index(drop=True)
+                        procedure_rank = procedure_rank_data[procedure_rank_data['Referring Physician'] == doctor_name].index
+                        
+                        if len(procedure_rank) > 0:
+                            procedure_rank = procedure_rank[0] + 1
+                            total_procedures = len(procedure_rank_data)
+                            if procedure_rank <= total_procedures:
+                                procedure_info.append(f"{procedure_name} (Rank: {procedure_rank}/{total_procedures})")
+                    
+                    if procedure_info:
+                        st.write(f"- **Procedures Done:** {', '.join(procedure_info)}")
+                    else:
+                        st.write("- **Procedures Done:** Not Available")
+                    
+                    max_referrals = doctor_data['Referrals'].max()
+                    st.write(f"- **Max Referrals in a Month:** {max_referrals}")
+
+                with st.expander("Addresses and Contact Information"):
+                    addresses = doctor_data[['Insurance', 'Address', 'Phone Number', 'Latitude', 'Longitude']].drop_duplicates()
+                    for _, row in addresses.iterrows():
+                        st.write(f"  - **Address:** {row['Address']}")
+                        st.write(f"  - **Phone Number:** {row['Phone Number']}")
+                        st.write(f"  - **Gotten from:** {row['Insurance']}")
+                        st.write("---")
+
+                st.write("### Map of Locations:")
+                avg_lat = doctor_data['Latitude'].mean() if 'Latitude' in doctor_data.columns else 0
+                avg_lon = doctor_data['Longitude'].mean() if 'Longitude' in doctor_data.columns else 0
+                doctor_map = folium.Map(location=[avg_lat, avg_lon], zoom_start=12)
+
+                for _, row in doctor_data.iterrows():
+                    if row['Latitude'] and row['Longitude']:
+                        folium.Marker(
+                            location=[row['Latitude'], row['Longitude']],
+                            popup=f"{row['Referring Physician']} - {row['Specialty']}",
+                            icon=folium.Icon(color='blue', icon='info-sign')
+                        ).add_to(doctor_map)
+
+                # Add a standard location marker for "CMS Diagnostic Services"
+                folium.Marker(
+                    location=[25.701410, -80.342660],
+                    popup="CMS Diagnostic Services",
+                    icon=folium.Icon(color='red', icon='hospital')
+                ).add_to(doctor_map)
+
+                folium_static(doctor_map)
+
+    # Insurance Payment Averages Page
+    elif st.session_state.current_page == "Insurance Payment Averages":
+        st.title("Insurance Payment Averages per Procedure")
+    
+        available_procedures = insurance_payments_df['Procedure'].unique()
+        selected_procedure = st.selectbox("Select a procedure to view insurance payment averages:", available_procedures)
+    
+        if selected_procedure:
+            filtered_payments = insurance_payments_df[insurance_payments_df['Procedure'] == selected_procedure]
+    
+            # Allow the user to select insurances of interest
+            available_insurances = filtered_payments['Insurance'].unique()
+            selected_insurances = st.multiselect("Select insurances to filter:", options=available_insurances, default=available_insurances)
+    
+            # Filter by the selected insurances
+            filtered_payments = filtered_payments[filtered_payments['Insurance'].isin(selected_insurances)]
+    
+            # Further filtering and formatting
+            filtered_payments = filtered_payments[['Insurance', 'Avg Payment', 'Margin']]
+            filtered_payments = filtered_payments[(filtered_payments['Insurance'] != '') & (filtered_payments['Avg Payment'] != '')]
+            filtered_payments['Avg Payment'] = pd.to_numeric(filtered_payments['Avg Payment'], errors='coerce').apply(lambda x: f"${x:.2f}" if pd.notna(x) else "N/A")
+            filtered_payments['Margin'] = pd.to_numeric(filtered_payments['Margin'], errors='coerce').apply(lambda x: f"{int(x)}%" if pd.notna(x) else "N/A")
+            filtered_payments = filtered_payments.sort_values(by='Margin', ascending=False).reset_index(drop=True)
+    
+            st.write(filtered_payments)
