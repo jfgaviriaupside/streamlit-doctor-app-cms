@@ -14,7 +14,6 @@ theme_colors = {
     "primary": "#1E3F6A",
     "secondary": "#EA622E",
     "accent": "#49A281",
-    "background": "#F5F5F5",
     "text": "#475368"
 }
 
