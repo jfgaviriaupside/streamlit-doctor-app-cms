@@ -362,4 +362,3 @@ if check_password():
             filtered_payments = filtered_payments.sort_values(by='Margin', ascending=False).reset_index(drop=True)
     
             st.write(filtered_payments)
-
