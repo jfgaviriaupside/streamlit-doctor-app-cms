@@ -245,13 +245,16 @@ if check_password():
                 'Referrals': 'max',
                 'CAGR': 'first',
                 'Luis': 'first',
-                'Gerardo': 'first'
+                'Gerardo': 'first',
+                'Prioritization Index': 'first'
             })
             .reset_index()
+            .sort_values(by='Prioritization Index', ascending=False)
         )
 
-        # Format CAGR as percentage
+        # Format CAGR as percentage and drop Prioritization Index from display
         unique_doctors['CAGR'] = pd.to_numeric(unique_doctors['CAGR'], errors='coerce').apply(lambda x: f"{x*100:.1f}%" if pd.notna(x) else "N/A")
+        unique_doctors = unique_doctors.drop(columns=['Prioritization Index'])
 
         # Display filtered data
         st.dataframe(unique_doctors)
