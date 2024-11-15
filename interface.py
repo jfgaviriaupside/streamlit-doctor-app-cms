@@ -4,6 +4,7 @@ import folium
 from streamlit_folium import folium_static
 import numpy as np
 import os
+from datetime import datetime
 from io import BytesIO
 
 # Set page configuration (must be the first Streamlit command)
@@ -30,9 +31,9 @@ if 'current_page' not in st.session_state:
 
 if check_password():
     # Load the data (use your own file path)
-    @st.cache
+    @st.cache_data
     def load_data():
-        file_path = 'Doctor_Matching_With_Procedures_Separate_Sheets_V2.xlsx'
+        file_path = 'Updated_Doctor_Matching_with_Luis_Gerardo_Status.xlsx'
         if os.path.exists(file_path):
             doctor_matching_df = pd.read_excel(file_path, sheet_name='Doctor_Matching')
             procedure_prioritization_df = pd.read_excel(file_path, sheet_name='Procedure_Prioritization')
@@ -54,11 +55,11 @@ if check_password():
     doctor_matching_df['Prioritization Index'] = pd.to_numeric(doctor_matching_df['Prioritization Index'], errors='coerce')
     procedure_prioritization_df['Prioritization Index Procedure'] = pd.to_numeric(procedure_prioritization_df['Prioritization Index Procedure'], errors='coerce')
 
-    # Main navigation options
+# Main navigation options
     st.sidebar.title("Navigation")
-    page = st.sidebar.selectbox("Go to", ["Home", "Doctor Profile Lookup", "Insurance Payment Averages"],
-                                index=["Home", "Doctor Profile Lookup", "Insurance Payment Averages"].index(st.session_state.current_page),
-                                key='navigation')
+    page = st.sidebar.selectbox("Go to", ["Home", "Doctor Profile Lookup", "Insurance Payment Averages", "Luis and Gerardo Filter"],
+                            index=["Home", "Doctor Profile Lookup", "Insurance Payment Averages", "Luis and Gerardo Filter"].index(st.session_state.current_page),
+                            key='navigation')
     navigate_to(page)
 
     # Home Page
@@ -223,8 +224,120 @@ if check_password():
                 ).add_to(doctor_map)
 
                 folium_static(doctor_map)
+    # Luis and Gerardo Filter Page
+    elif st.session_state.current_page == "Luis and Gerardo Filter":
+        st.title("Luis and Gerardo Filter")
 
-    # Insurance Payment Averages Page
+        # Filter based on Luis or Gerardo
+        filter_option = st.radio("Select Filter:", ("Luis", "Gerardo"))
+
+        if filter_option == "Luis":
+            filtered_df = doctor_matching_df[doctor_matching_df['Luis'] == 'x']
+        elif filter_option == "Gerardo":
+            filtered_df = doctor_matching_df[doctor_matching_df['Gerardo'] == 'x']
+
+        # Create a unique doctors dataframe with specified columns
+        unique_doctors = (filtered_df
+            .groupby('Referring Physician')
+            .agg({
+                'Specialty': 'first',
+                'Insurance': lambda x: ', '.join(x.unique()),
+                'Referrals': 'max',
+                'CAGR': 'first',
+                'Luis': 'first',
+                'Gerardo': 'first'
+            })
+            .reset_index()
+        )
+
+        # Format CAGR as percentage
+        unique_doctors['CAGR'] = pd.to_numeric(unique_doctors['CAGR'], errors='coerce').apply(lambda x: f"{x*100:.1f}%" if pd.notna(x) else "N/A")
+
+        # Display filtered data
+        st.dataframe(unique_doctors)
+
+        # Search bar to look up doctor by name
+        doctor_name = st.selectbox("Search for a doctor by name:", options=filtered_df['Referring Physician'].unique(), index=0)
+        
+        if doctor_name:
+            doctor_data = filtered_df[filtered_df['Referring Physician'] == doctor_name]
+
+            if not doctor_data.empty:
+                first_entry = doctor_data.iloc[0]
+                st.write(f"## Doctor Profile: {first_entry['Referring Physician']}")
+                rank_data = doctor_matching_df[['Referring Physician', 'Prioritization Index']].sort_values(by='Prioritization Index', ascending=False).reset_index(drop=True)
+                rank = rank_data[rank_data['Referring Physician'] == first_entry['Referring Physician']].index
+                if len(rank) > 0:
+                    rank = rank[0] + 1
+                    total_doctors = len(rank_data)
+                    st.write(f"- **Rank:** {rank}/{total_doctors}")
+                else:
+                    st.write("- **Rank:** Not Available")
+
+                col1, col2 = st.columns(2)
+
+                with col1:
+                    st.write(f"- **Specialty:** {first_entry['Specialty']}")
+                    insurances = ', '.join(doctor_data['Insurance'].unique())
+                    st.write(f"- **Insurances:** {insurances}")
+                    luis_gerardo = first_entry['Luis'] if pd.notna(first_entry['Luis']) else ''
+                    gerardo = first_entry['Gerardo'] if pd.notna(first_entry['Gerardo']) else ''
+                    st.write(f"- **Luis or Gerardo:** {'Luis' if luis_gerardo == 'x' else ''} {'Gerardo' if gerardo == 'x' else ''}")
+                
+                with col2:
+                    max_referrals = doctor_data['Referrals'].max()
+                    st.write(f"- **Max Referrals in a Month:** {max_referrals}")
+
+                with st.expander("Addresses and Contact Information"):
+                    addresses = doctor_data[['Insurance', 'Address', 'Phone Number', 'Latitude', 'Longitude']].drop_duplicates()
+                    for _, row in addresses.iterrows():
+                        st.write(f"  - **Address:** {row['Address']}")
+                        st.write(f"  - **Phone Number:** {row['Phone Number']}")
+                        st.write(f"  - **Gotten from:** {row['Insurance']}")
+                        st.write("---")
+
+                st.write("### Map of Locations:")
+                avg_lat = doctor_data['Latitude'].mean() if 'Latitude' in doctor_data.columns else 0
+                avg_lon = doctor_data['Longitude'].mean() if 'Longitude' in doctor_data.columns else 0
+                doctor_map = folium.Map(location=[avg_lat, avg_lon], zoom_start=12)
+
+                for _, row in doctor_data.iterrows():
+                    if row['Latitude'] and row['Longitude']:
+                        folium.Marker(
+                            location=[row['Latitude'], row['Longitude']],
+                            popup=f"{row['Referring Physician']} - {row['Specialty']}",
+                            icon=folium.Icon(color='blue', icon='info-sign')
+                        ).add_to(doctor_map)
+
+                # Add a standard location marker for "CMS Diagnostic Services"
+                folium.Marker(
+                    location=[25.701410, -80.342660],
+                    popup="CMS Diagnostic Services",
+                    icon=folium.Icon(color='red', icon='hospital')
+                ).add_to(doctor_map)
+
+                folium_static(doctor_map)
+
+        # Mark as Contacted section (moved inside this page)
+        st.write("### Mark Doctor as Contacted")
+        contacted_doctor = st.selectbox("Select Doctor:", filtered_df['Referring Physician'].unique())
+        if st.button("Mark as Contacted"):
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            doctor_matching_df.loc[doctor_matching_df['Referring Physician'] == contacted_doctor, 'Contacted'] = True
+            doctor_matching_df.loc[doctor_matching_df['Referring Physician'] == contacted_doctor, 'Contact_DateTime'] = current_time
+            st.success(f"Doctor {contacted_doctor} marked as contacted at {current_time}")
+            
+            # Save the updated dataframe
+            doctor_matching_df.to_excel('Updated_Doctor_Matching_with_Contact_Status.xlsx', index=False)
+            st.info("Contact status and timestamp saved for later review.")
+
+            # Display contact history
+            contact_history = doctor_matching_df[doctor_matching_df['Contacted'] == True][['Referring Physician', 'Contact_DateTime']]
+            if not contact_history.empty:
+                st.write("### Contact History:")
+                st.dataframe(contact_history)
+
+# Insurance Payment Averages Page
     elif st.session_state.current_page == "Insurance Payment Averages":
         st.title("Insurance Payment Averages per Procedure")
     
@@ -249,3 +362,4 @@ if check_password():
             filtered_payments = filtered_payments.sort_values(by='Margin', ascending=False).reset_index(drop=True)
     
             st.write(filtered_payments)
+
